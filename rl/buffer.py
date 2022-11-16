@@ -1,33 +1,23 @@
 import random
+from collections import namedtuple
+
+transition = namedtuple('transition', 'state, next_state, action, reward, is_terminal')
 
 class ReplayBuffer(object):
-    def __init__(self, capacity):
-        self._storage = []
-        self._capacity = capacity
-        self._next_idx = 0
-
+    def __init__(self, buffer_size):
+        self.buffer_size = buffer_size
+        self.location = 0
+        self.buffer = []
+    
     def __len__(self):
-        return len(self._storage)
+        return len(self.buffer)
     
-    def add(self, state, action, reward, next_states, done):
-        data = (state, action, reward, next_states, done)
-        if self._next_idx >= len(self._storage):
-            self._storage.append(data)
+    def add(self, *args):
+        if len(self.buffer) < self.buffer_size:
+            self.buffer.append(transition(*args))
         else:
-            self._storage[self._next_idx] = data
-        self._next_idx = (self._next_idx + 1) % self._capacity
+            self.buffer[self.location] = transition(*args)
+        self.location = (self.location + 1) % self.buffer_size
     
-    def _encode_samples(self, indexs):
-        states, actions, rewards, next_states, dones = [], [], [], [], []
-        for i in indexs:
-            data = self._storage[i]
-            state, action, reward, next_state, done = data
-            states.append(state)
-            actions.append(action)
-            rewards.append(reward)
-            next_states.append(next_state)
-            dones.append(done)
-        return states, actions, rewards, next_states, dones
-
     def sample(self, batch_size):
-        indexs = random.
+        return random.sample(self.buffer, batch_size)
